@@ -1,0 +1,9 @@
+bcdoc==0.16.0
+boto3==0.0.21
+botocore==1.0.0b3
+click==4.0
+docutils==0.12
+futures==2.2.0
+jmespath==0.7.1
+python-dateutil==2.4.2
+six==1.9.0
