@@ -8,8 +8,22 @@ import re
 import shlex
 import click
 import boto3
+import botocore
 from dateutil import parser
 import jmespath
+
+
+def env_from_profile(ctx, param, value):
+    if not value:
+        return
+    session = botocore.session.get_session()
+    session.profile = value
+    options = session.get_scoped_config()
+    for opt in options:
+        env_opt = opt.upper()
+        if env_opt.startswith(ctx.auto_envvar_prefix):
+            os.environ.setdefault(env_opt, options[opt])
+    return value
 
 
 class State(object):
@@ -18,22 +32,33 @@ class State(object):
 
 pass_state = click.make_pass_decorator(State, ensure=True)
 
+
 @click.group()
-@click.option('--profile')
+@click.option('--profile', is_eager=True, callback=env_from_profile)
 @click.option('--region')
+@click.option('--access-key')
+@click.option('--secret-key')
 @pass_state
-def cli(state, profile, region):
+def cli(state, profile, region, access_key, secret_key):
     state.profile = profile
     state.region = region
-    boto3.setup_default_session(profile_name=profile, region_name=region)
+    boto3.setup_default_session(profile_name=profile,
+                                region_name=region,
+                                aws_access_key_id=access_key,
+                                aws_secret_access_key=secret_key)
+
 
 @cli.command()
-@click.option('--bucket', 'bucket_name', required=True)
+@click.option('--bucket', required=True)
 @click.option('--time-prefix', required=True)
 @click.option('--elb', required=True)
 @click.option('--output-dir', default=os.getcwd())
 @pass_state
-def download(state, bucket_name, time_prefix, elb, output_dir):
+def download(state, bucket, time_prefix, elb, output_dir):
+
+    if not state.region:
+        raise click.ClickException('--region is required for download')
+
     account = account_number()
 
     time_match = re.match(r'(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2})(T(?P<time>\d)+)?', time_prefix)
@@ -50,19 +75,19 @@ def download(state, bucket_name, time_prefix, elb, output_dir):
                                       region=state.region)
     s3client = boto3.client('s3')
     s3 = boto3.resource('s3')
-    bucket = s3.Bucket(bucket_name)
+    s3bucket = s3.Bucket(bucket)
     download_dir = '{output_dir}/{bucket}/{time}/'.format(output_dir=output_dir,
-                                                          bucket=bucket_name,
+                                                          bucket=bucket,
                                                           time=time_prefix)
     if not os.path.exists(download_dir):
         os.makedirs(download_dir)
-    for obj in bucket.objects.filter(Prefix=s3prefix):
+    for obj in s3bucket.objects.filter(Prefix=s3prefix):
         filename = obj.key.split('/')[-1]
         output_file = os.path.join(download_dir, filename)
-        click.echo("'s3://{bucket}/{key}' > '{output_file}'".format(bucket=bucket_name,
+        click.echo("'s3://{bucket}/{key}' > '{output_file}'".format(bucket=bucket,
                                                                     key=obj.key,
                                                                     output_file=output_file))
-        s3client.download_file(bucket_name, obj.key, output_file)
+        s3client.download_file(bucket, obj.key, output_file)
 
 
 @cli.command()
