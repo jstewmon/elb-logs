@@ -91,7 +91,7 @@ def download(state, bucket, time_prefix, elb, output_dir):
 
 
 @cli.command()
-@click.argument('input-files', nargs=-1, type=click.File('rb'))
+@click.argument('input-files', nargs=-1, type=click.File('rb'), required=True)
 def parse(input_files):
 
     def parse_address(addr):
