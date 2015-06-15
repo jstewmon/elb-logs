@@ -148,9 +148,9 @@ def input_filter(expression, input_files):
         return izip_longest(fillvalue=fillvalue, *args)
 
     for f in input_files:
-        for line_group in grouper(f, 1000, '{}'):
+        for line_group in grouper(f, 1000, None):
             try:
-                filtered = line_filter.search(map(json.loads, line_group))
+                filtered = line_filter.search([json.loads(l) for l in line_group if l is not None])
             except Exception as e:
                 click.echo(e, err=True)
             else:
