@@ -131,6 +131,7 @@ def parse(input_files):
                 click.echo(json.dumps(pl))
             except Exception as e:
                 click.echo(e, err=True)
+                click.echo(line, err=True)
 
 
 @cli.command('filter')
