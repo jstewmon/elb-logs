@@ -16,8 +16,7 @@ import jmespath
 def env_from_profile(ctx, param, value):
     if not value:
         return
-    session = botocore.session.get_session()
-    session.profile = value
+    session = botocore.session.Session(profile=value)
     options = session.get_scoped_config()
     for opt in options:
         env_opt = opt.upper()
