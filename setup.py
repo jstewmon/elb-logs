@@ -10,9 +10,9 @@ setup(name='elb-log',
           ],
       },
       install_requires=[
-          'jmespath',
-          'python-dateutil',
-          'click',
-          'boto3'
+          'jmespath~=0.7',
+          'python-dateutil~=2.4',
+          'click~=4.0',
+          'boto3~=1.0'
       ],
       packages=find_packages(exclude=['tests*']),)

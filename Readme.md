@@ -11,7 +11,12 @@ elb-logs is a cli that makes downloading, parsing and filtering elb logs a cinch
 With virtualenv:
 
 ```
-mkvirtualenv elb-logs && pip install git+git://github.com/jstewmon/elb-logs.git@master
+mkvirtualenv elb-logs \
+&& pip install \
+    --no-cache-dir \
+    --upgrade \
+    -i https://pypi.python.org/simple \
+    git+git://github.com/jstewmon/elb-logs.git@master
 ```
 
 ## Commands

@@ -1,6 +1,6 @@
 bcdoc==0.16.0
 boto3==1.0.1
-botocore==1.0.0b3
+botocore==1.0.1
 click==4.0
 docutils==0.12
 futures==2.2.0
