@@ -159,9 +159,10 @@ def input_filter(expression, input_files):
 
 
 def account_number():
-    iam = boto3.resource('iam')
-    arn = iam.CurrentUser().arn
-    return arn.split(':')[4]
+    sts = boto3.client('sts')
+    caller_id = sts.get_caller_identity()
+    return caller_id['Account']
+
 
 def main():
     return cli(auto_envvar_prefix='ELB_LOGS')
